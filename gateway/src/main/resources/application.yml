@@ -1,0 +1,30 @@
+server:
+  port: 8765
+
+zuul:
+  retryable: true
+  routes:
+    authenticationservice-api:
+      path: '/login/**'
+      serviceId: 'authenticationService'
+    userservice-api:
+      path: '/users/**'
+      serviceId: 'userService'
+    messageservice-api:
+      path: '/messages/**'
+      serviceId: 'messageService'
+
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://localhost:8761/eureka'
+  instance:
+    instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+
+spring:
+  application:
+    name: gateway
+
+ribbon:
+  MaxAutoRetries: 1
+  MaxAutoRetriesNextServers: 5

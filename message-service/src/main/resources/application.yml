@@ -1,0 +1,20 @@
+server:
+  port: 0
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://localhost:8761/eureka'
+  instance:
+    instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+
+spring:
+  application:
+    name: messageService
+  data:
+    mongodb:
+      database: userService
+      host: localhost
+      port: 27017
+
+jwt:
+  secretKey: SECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKEN
