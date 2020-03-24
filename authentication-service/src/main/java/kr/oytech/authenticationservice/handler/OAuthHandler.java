@@ -1,6 +1,5 @@
 package kr.oytech.authenticationservice.handler;
 
-import feign.Feign;
 import feign.Headers;
 import feign.RequestLine;
 import io.jsonwebtoken.Jwts;
@@ -19,6 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -41,16 +42,14 @@ public class OAuthHandler {
   private final Key key;
   private GithubOauthConfig configProps;
 
+  @Autowired
   private UserServiceClient userServiceClient;
 
   @Autowired
   public OAuthHandler(GithubOauthConfig configProps, @Value("${jwt.secretKey}") String secretKey) {
     this.configProps = configProps;
 
-    this.userServiceClient = Feign.builder()
-        .encoder(new GsonEncoder())
-        .decoder(new GsonDecoder())
-        .target(UserServiceClient.class, "http://localhost:8765/users");
+
     this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
   }
 
@@ -100,15 +99,19 @@ public class OAuthHandler {
 
   }
 
-  @FeignClient(value = "userService")
+  @FeignClient(name = "userService")
   public interface UserServiceClient {
 
-    @RequestLine("POST /users")
+//    @RequestLine("POST /users")
+    @RequestMapping(value = "/users", method = RequestMethod.POST, consumes = "application/json")
     @Headers({
         "Accept: application/json",
         "Content-Type: application/json"
     })
     Map<String, Object> addUser(AddUserRequest addUserRequest);
+
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    String getName();
 
   }
 

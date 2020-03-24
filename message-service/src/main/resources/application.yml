@@ -18,3 +18,18 @@ spring:
 
 jwt:
   secretKey: SECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKEN
+
+---
+
+spring:
+     profiles: docker
+     data:
+       mongodb:
+         database: userService
+         host: host.docker.internal
+         port: 27017
+
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://cloudchat-server:8761/eureka'

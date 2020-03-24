@@ -28,3 +28,11 @@ spring:
 ribbon:
   MaxAutoRetries: 1
   MaxAutoRetriesNextServers: 5
+
+---
+spring:
+  profiles: docker
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://cloudchat-server:8761/eureka'

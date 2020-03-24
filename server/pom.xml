@@ -10,9 +10,9 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>kr.oytech</groupId>
-  <artifactId>message-service</artifactId>
+  <artifactId>server</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>message-service</name>
+  <name>server</name>
   <description>Demo project for Spring Boot</description>
 
   <properties>
@@ -23,50 +23,8 @@
   <dependencies>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+      <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.12</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
-      <version>2.2.5.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
-      <version>2.2.5.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-openfeign</artifactId>
-      <version>2.2.2.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-api</artifactId>
-      <version>0.11.1</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-impl</artifactId>
-      <version>0.11.1</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
-      <version>0.11.1</version>
-      <scope>runtime</scope>
-    </dependency>
-
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -99,7 +57,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
-          <finalName>messageService</finalName>
+          <finalName>eureka-server</finalName>
         </configuration>
       </plugin>
     </plugins>

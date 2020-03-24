@@ -9,11 +9,23 @@ eureka:
   client:
     service-url:
       defaultZone: 'http://localhost:8761/eureka'
+    fetch-registry: true
   instance:
     instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
-
+    prefer-ip-address: true
 oauth.github:
   client-id: 7fc4e156cc81557df516
   client-secret: 8fd0cdc9ca5849d209b745933ffc5705b8fc0b45
 
 jwt.secretKey: SECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKENSECRETKEYFORJWTTOKEN
+
+---
+
+spring:
+     profiles: docker
+
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://cloudchat-server:8761/eureka'
+

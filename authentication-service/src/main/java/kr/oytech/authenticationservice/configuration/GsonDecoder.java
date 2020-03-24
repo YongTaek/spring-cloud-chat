@@ -1,4 +1,4 @@
-package kr.oytech.authenticationservice.handler;
+package kr.oytech.authenticationservice.configuration;
 
 import static feign.Util.UTF_8;
 import static feign.Util.ensureClosed;
