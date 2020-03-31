@@ -37,7 +37,6 @@ public class MessageHandler {
           Jwt jwt = Jwts.parserBuilder().setSigningKey(key).build()
               .parse(parameter.getToken());
           String userId = (String) ((Claims) jwt.getBody()).get("userId");
-          System.out.println(userId);
           return Map.of("userId", userId, "chatId", parameter.getChatId(), "content",
               parameter.getContent());
         })

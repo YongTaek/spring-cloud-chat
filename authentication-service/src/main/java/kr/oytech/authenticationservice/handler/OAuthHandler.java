@@ -1,7 +1,6 @@
 package kr.oytech.authenticationservice.handler;
 
 import feign.Headers;
-import feign.RequestLine;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -11,10 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 import kr.oytech.authenticationservice.configuration.GithubOauthConfig;
 import kr.oytech.authenticationservice.model.User;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.Nullable;
 
 @Component
 public class OAuthHandler {
@@ -42,14 +45,13 @@ public class OAuthHandler {
   private final Key key;
   private GithubOauthConfig configProps;
 
-  @Autowired
-  private UserServiceClient userServiceClient;
+  private final WebClient.Builder loadBalancedWebClientBuilder;
 
   @Autowired
-  public OAuthHandler(GithubOauthConfig configProps, @Value("${jwt.secretKey}") String secretKey) {
+  public OAuthHandler(GithubOauthConfig configProps, @Value("${jwt.secretKey}") String secretKey,
+      WebClient.Builder webClientBuilder) {
     this.configProps = configProps;
-
-
+    this.loadBalancedWebClientBuilder = webClientBuilder;
     this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
   }
 
@@ -63,7 +65,7 @@ public class OAuthHandler {
         .body(BodyInserters.fromFormData("client_id", clientId)
             .with("client_secret", clientSecret)
             .with("code", code))
-        .accept(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM)
         .exchange()
         .flatMap(r -> r.bodyToMono(HashMap.class))
         .map(t -> (String) t.get("access_token"))
@@ -78,31 +80,41 @@ public class OAuthHandler {
                   .githubId(oauthId)
                   .name(name)
                   .build();
-            })
-            .map(user -> {
-              AddUserRequest params = AddUserRequest.builder().name(user.getName())
-                  .oauthId(user.getGithubId()).build();
-              Map<String, Object> response = userServiceClient.addUser(params);
-              if ((boolean) response.get("success")) {
-                String userId = (String) response.get("userId");
-                String jwtToken = Jwts.builder()
-                    .setIssuedAt(new Date())
-                    .setIssuer(userId)
-                    .claim("userId", userId)
-                    .signWith(key).compact();
-                return Map.of("success", true, "jwt", jwtToken);
-              } else {
-                return Map.of("success", false);
-              }
             }))
-        .flatMap(response -> ServerResponse.ok().bodyValue(response));
+        .flatMap(user -> {
+          AddUserRequest params = AddUserRequest.builder().name(user.getName())
+              .oauthId(user.getGithubId()).build();
+          return loadBalancedWebClientBuilder.build().post().uri("http://user-service/users")
+              .bodyValue(params).exchange()
+              .flatMap(response -> response.bodyToMono(AddUserResponse.class))
+              .map(response -> {
+                if (response.isSuccess()) {
+                  String userId = response.getUserId();
+                  String jwtToken = Jwts.builder()
+                      .setIssuedAt(new Date())
+                      .setIssuer(userId)
+                      .claim("userId", userId)
+                      .signWith(key).compact();
+                  return Map.of("success", true, "jwt", jwtToken);
+                } else {
+                  return Map.of("success", false);
+                }
+              });
+        })
+        .flatMap(response -> ServerResponse.ok().bodyValue(response))
+        .switchIfEmpty(ServerResponse.ok().bodyValue(Map.of("success", false)))
+        .onErrorResume((throwable) -> {
+          System.out.println(throwable.getMessage());
+          return ServerResponse.ok().bodyValue(Map.of("success", false));
+        });
 
   }
+
 
   @FeignClient(name = "userService")
   public interface UserServiceClient {
 
-//    @RequestLine("POST /users")
+    //    @RequestLine("POST /users")
     @RequestMapping(value = "/users", method = RequestMethod.POST, consumes = "application/json")
     @Headers({
         "Accept: application/json",
@@ -122,5 +134,16 @@ public class OAuthHandler {
     public String name;
     public Object oauthId;
 
+  }
+
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @Builder
+  private static class AddUserResponse {
+
+    private boolean success;
+    @Nullable
+    private String userId;
   }
 }

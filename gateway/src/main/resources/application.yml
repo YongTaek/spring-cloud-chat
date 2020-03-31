@@ -5,14 +5,14 @@ zuul:
   retryable: true
   routes:
     authenticationservice-api:
-      path: '/login/**'
-      serviceId: 'authenticationService'
+      path: '/api/authentication/**'
+#      serviceId: 'authenticationService'
     userservice-api:
-      path: '/users/**'
-      serviceId: 'userService'
+      path: '/api/user/**'
+#      serviceId: 'userService'
     messageservice-api:
-      path: '/messages/**'
-      serviceId: 'messageService'
+      path: 'api/messages/**'
+#      serviceId: 'messageService'
 
 eureka:
   client:

@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: 50002
 eureka:
   client:
     service-url:
@@ -33,3 +33,14 @@ eureka:
   client:
     service-url:
       defaultZone: 'http://cloudchat-server:8761/eureka'
+---
+
+spring:
+  profiles: kubernetes
+  data:
+    mongodb:
+      host: mongodb
+      password: ${MONGO_PASSWORD}
+      port: 27017
+      database: ${MONGO_DATABASE}
+      username: ${MONGO_USERNAME}

@@ -34,9 +34,12 @@ public class UserHandler {
             .build())
         .flatMap(user -> userRepository.findByOauthId(user.getOauthId())
             .flatMap(alreadyUser -> ServerResponse.ok()
+                .header("Content-Type", "application/json")
                 .bodyValue(Map.of("success", true, "message", "already exist", "userId", alreadyUser.getId())))
             .switchIfEmpty(userRepository.save(user)
-                .flatMap(newUser -> ServerResponse.ok().bodyValue(Map.of("success", true, "userId", newUser.getId()))))
+                .flatMap(newUser -> ServerResponse.ok()
+                    .header("Content-Type", "application/json")
+                    .bodyValue(Map.of("success", true, "userId", newUser.getId()))))
         );
 
   }
